@@ -57,15 +57,12 @@ $(STAMP_DIR)/build-%: $(STAMP_DIR)/genscripts $(STAMP_DIR)/patch
 
 clean: xsfclean
 	dh_testdir
-	dh_testroot
 	rm -f build-stamp
-
 	rm -f config.cache config.log config.status
 	rm -f */config.cache */config.log */config.status
 	rm -f conftest* */conftest*
 	rm -rf autom4te.cache */autom4te.cache
 	rm -rf *-build
-
 	dh_clean
 
 install: build
@@ -85,7 +82,9 @@ binary-arch: build install
 	dh_testroot
 
 	dh_installdocs
-	dh_install --sourcedir=debian/tmp --list-missing
+	dh_install --sourcedir=debian/tmp --fail-missing -Xxkbcomp.pc
+	install -m 644 xkbevd/example.cf \
+		debian/x11-xkb-utils/usr/share/doc/x11-xkb-utils/xkbevd-example.cf
 	dh_installchangelogs
 	dh_link
 	dh_strip
@@ -110,4 +109,4 @@ get-tarballs: $(addprefix get-tarball-,$(SUBDIRS))
 
 .PHONY: get-tarball-%
 get-tarball-%:
-	uscan --no-conf --download --no-symlink --package $* --upstream-version $(shell awk -F = '/^PACKAGE_VERSION=/ { print $$2 }' < $*/configure ) --watchfile debian/watch.$* || test $$? = 1
+	uscan --no-conf --destdir . --download --no-symlink --package $* --upstream-version $(shell awk -F = '/^PACKAGE_VERSION=/ { print $$2 }' < $*/configure ) --watchfile debian/watch.$* || test $$? = 1

@@ -20,40 +20,47 @@ dnl  PERFORMANCE OF THIS SOFTWARE.
 dnl
 dnl Process this file with autoconf to create configure.
 
-AC_PREREQ([2.57])
-AC_INIT(xkbcomp,[1.1.1], [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],xkbcomp)
+AC_PREREQ([2.60])
+AC_INIT([xkbcomp], [1.2.4],
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], [xkbcomp])
 AM_INIT_AUTOMAKE([foreign dist-bzip2])
 AM_MAINTAINER_MODE
 
-# Require xorg-macros: XORG_DEFAULT_OPTIONS
+# Require X.Org macros 1.8 or later for MAN_SUBSTS set by XORG_MANPAGE_SECTIONS
 m4_ifndef([XORG_MACROS_VERSION],
-          [m4_fatal([must install xorg-macros 1.3 or later before running autoconf/autogen])])
-XORG_MACROS_VERSION(1.3)
+          [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
+XORG_MACROS_VERSION(1.8)
 XORG_DEFAULT_OPTIONS
 
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
-AC_PROG_CC
+# If both the C file and YACC are missing, the package cannot be build.
 AC_PROG_YACC
 AC_PATH_PROG([YACC_INST], $YACC)
-test -z "$YACC_INST" && AC_MSG_ERROR([yacc not found - unable to compile xkbparse.y])
-AC_PROG_INSTALL
-
+if test ! -f "$srcdir/xkbparse.c"; then
+   if test -z "$YACC_INST"; then
+      AC_MSG_ERROR([yacc not found - unable to compile xkbparse.y])
+   fi
+fi
 
 AC_CHECK_FUNCS([strdup strcasecmp])
-AC_CHECK_HEADERS([limits.h])
+
+REQUIRED_MODULES="x11 xkbfile xproto >= 7.0.17"
 
 # Checks for pkg-config packages
-PKG_CHECK_MODULES(XKBCOMP, x11 xkbfile)
-AC_SUBST(XKBCOMP_CFLAGS)
-AC_SUBST(XKBCOMP_LIBS)
+PKG_CHECK_MODULES(XKBCOMP, [$REQUIRED_MODULES])
+AC_SUBST(REQUIRED_MODULES)
 
 AC_ARG_WITH([xkb_config_root],
-    [AC_HELP_STRING([--with-xkb-config-root=<paths>],
+    [AS_HELP_STRING([--with-xkb-config-root=<paths>],
         [Set default XKB config root (default: ${datadir}/X11/xkb)])],
     [XKBCONFIGROOT="$withval"],
     [XKBCONFIGROOT='${datadir}/X11/xkb'])
 AC_SUBST([XKBCONFIGROOT])
 
 
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([
+	Makefile
+	man/Makefile
+	xkbcomp.pc])
+AC_OUTPUT

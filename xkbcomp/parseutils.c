@@ -30,9 +30,7 @@
 #include <X11/keysym.h>
 #include <X11/extensions/XKBgeom.h>
 #include <X11/Xalloca.h>
-#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#endif
 #include <stdlib.h>
 
 XkbFile *rtrnValue;
@@ -222,7 +220,7 @@ BoolVarCreate(Atom nameToken, unsigned set)
 }
 
 InterpDef *
-InterpCreate(KeySym sym, ExprDef * match)
+InterpCreate(const char *sym_str, ExprDef * match)
 {
     InterpDef *def;
 
@@ -231,7 +229,10 @@ InterpCreate(KeySym sym, ExprDef * match)
     {
         def->common.stmtType = StmtInterpDef;
         def->common.next = NULL;
-        def->sym = sym;
+        if (LookupKeysym(sym_str, &def->sym) == 0)
+            def->ignore = True;
+        else
+            def->ignore = False;
         def->match = match;
     }
     else
@@ -624,7 +625,7 @@ AppendKeysymList(ExprDef * list, char *sym)
 }
 
 int
-LookupKeysym(char *str, KeySym * sym_rtrn)
+LookupKeysym(const char *str, KeySym * sym_rtrn)
 {
     KeySym sym;
     char *tmp;
@@ -747,12 +748,12 @@ IncludeCreate(char *str, unsigned merge)
 void
 PrintStmtAddrs(ParseCommon * stmt)
 {
-    fprintf(stderr, "0x%x", stmt);
+    fprintf(stderr, "%p", stmt);
     if (stmt)
     {
         do
         {
-            fprintf(stderr, "->0x%x", stmt->next);
+            fprintf(stderr, "->%p", stmt->next);
             stmt = stmt->next;
         }
         while (stmt);

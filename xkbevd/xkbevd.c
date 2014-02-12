@@ -1,4 +1,3 @@
-/* $Xorg: xkbevd.c,v 1.4 2000/08/17 19:54:49 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -7,24 +6,23 @@
  fee is hereby granted, provided that the above copyright
  notice appear in all copies and that both that copyright
  notice and this permission notice appear in supporting
- documentation, and that the name of Silicon Graphics not be 
- used in advertising or publicity pertaining to distribution 
+ documentation, and that the name of Silicon Graphics not be
+ used in advertising or publicity pertaining to distribution
  of the software without specific prior written permission.
- Silicon Graphics makes no representation about the suitability 
+ Silicon Graphics makes no representation about the suitability
  of this software for any purpose. It is provided "as is"
  without any express or implied warranty.
- 
- SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS 
- SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY 
+
+ SILICON GRAPHICS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SILICON
- GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL 
- DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, 
- DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
+ GRAPHICS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
  OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.8 2001/01/17 23:46:09 dawes Exp $ */
 
 #define	DEBUG_VAR xkbevdDebug
 #include <X11/Xosdefs.h>
@@ -60,7 +58,7 @@
 
 static char *	dpyName=	NULL;
 Display *	dpy=		NULL;
-static char *	cfgFileName=	NULL;
+static const char *	cfgFileName=	NULL;
 int		xkbOpcode=	0;
 int		xkbEventCode=	0;
 Bool		detectableRepeat= False;
@@ -74,29 +72,26 @@ static Bool	synch=		False;
 static int	verbose=	0;
 static Bool	background=	False;
 
-static char *	soundCmd=	NULL;
-static char *	soundDir=	NULL;
+static const char *	soundCmd=	NULL;
+static const char *	soundDir=	NULL;
 
 XkbDescPtr	xkb=		NULL;
 
 /***====================================================================***/
 
-#define	M(m)	fprintf(stderr,(m))
-#define	M1(m,a)	fprintf(stderr,(m),(a))
-
 static void
 Usage(int argc, char *argv[])
 {
-    M1("Usage: %s [options]...\n",argv[0]);
-    M("Legal options:\n");
-    M("-?,-help             Print this message\n");
-    M("-cfg <file>          Specify a config file\n");
-    M("-sc <cmd>            Specify the command to play sounds\n");
-    M("-sd <dir>            Specify the root directory for sound files\n");
-    M("-d[isplay] <dpy>     Specify the display to watch\n");
-    M("-bg                  Run in background\n");
-    M("-synch               Force synchronization\n");
-    M("-v                   Print verbose messages\n");
+    fprintf(stderr, "Usage: %s [options]...\n%s", argv[0],
+	    "Legal options:\n"
+	    "-?, -help            Print this message\n"
+	    "-cfg <file>          Specify a config file\n"
+	    "-sc <cmd>            Specify the command to play sounds\n"
+	    "-sd <dir>            Specify the root directory for sound files\n"
+	    "-d[isplay] <dpy>     Specify the display to watch\n"
+	    "-bg                  Run in background\n"
+	    "-synch               Force synchronization\n"
+	    "-v                   Print verbose messages\n");
     return;
 }
 
@@ -119,8 +114,9 @@ register int i;
 	    else {
 		char *name= argv[++i];
 		if (cfgFileName!=NULL) {
-		    if (uStringEqual(cfgFileName,name)) 
-			uWarning("Config file \"%s\" specified twice!\n");
+		    if (uStringEqual(cfgFileName,name))
+			uWarning("Config file \"%s\" specified twice!\n",
+				 name);
 		    else {
 			uWarning("Multiple config files on command line\n");
 			uAction("Using \"%s\", ignoring \"%s\"\n",name,
@@ -138,8 +134,9 @@ register int i;
 	    else {
 		char *name= argv[++i];
 		if (dpyName!=NULL) {
-		    if (uStringEqual(dpyName,name)) 
-			uWarning("Display \"%s\" specified twice!\n");
+		    if (uStringEqual(dpyName,name))
+			uWarning("Display \"%s\" specified twice!\n",
+				 name);
 		    else {
 			uWarning("Multiple displays on command line\n");
 			uAction("Using \"%s\", ignoring \"%s\"\n",name,
@@ -157,8 +154,9 @@ register int i;
 	    else {
 		char *name= argv[++i];
 		if (soundCmd!=NULL) {
-		    if (uStringEqual(soundCmd,name)) 
-			uWarning("Sound command \"%s\" specified twice!\n");
+		    if (uStringEqual(soundCmd,name))
+			uWarning("Sound command \"%s\" specified twice!\n",
+				 name);
 		    else {
 			uWarning("Multiple sound commands on command line\n");
 			uAction("Using \"%s\", ignoring \"%s\"\n",name,
@@ -176,8 +174,9 @@ register int i;
 	    else {
 		char *name= argv[++i];
 		if (soundDir!=NULL) {
-		    if (uStringEqual(soundDir,name)) 
-			uWarning("Sound directory \"%s\" specified twice!\n");
+		    if (uStringEqual(soundDir,name))
+			uWarning("Sound directory \"%s\" specified twice!\n",
+				 name);
 		    else {
 			uWarning("Multiple sound dirs on command line\n");
 			uAction("Using \"%s\", ignoring \"%s\"\n",name,
@@ -280,7 +279,7 @@ unsigned	priv= 0;
 		}
 	    }
 	    else {
-		uWarning("Assignment to unknown variable \"%s\"\n",cfg->name);
+		uWarning("Assignment to unknown variable \"%s\"\n", name);
 		uAction("Ignored\n");
 	    }
 	}
@@ -288,13 +287,13 @@ unsigned	priv= 0;
 	    case XkbBellNotify:
 		if (name!=NULL)	cfg->name.atom= XInternAtom(dpy,name,False);
 		else 		cfg->name.atom= None;
-		if (name) uFree(name);
+		if (name) free(name);
 		break;
 	    case XkbAccessXNotify:
 		priv= 0;
-		if (name==NULL)		
+		if (name==NULL)
 		     priv= XkbAllNewKeyboardEventsMask;
-		else if (uStrCaseEqual(name,"skpress"))	
+		else if (uStrCaseEqual(name,"skpress"))
 		     priv= XkbAXN_SKPressMask;
 		else if (uStrCaseEqual(name,"skaccept"))
 		     priv= XkbAXN_SKAcceptMask;
@@ -308,7 +307,7 @@ unsigned	priv= 0;
 		     priv= XkbAXN_BKRejectMask;
 		else if (uStrCaseEqual(name,"warning"))
 		     priv= XkbAXN_AXKWarningMask;
-		if (name)	uFree(name);
+		if (name)	free(name);
 		cfg->name.priv= priv;
 		break;
 	    case XkbActionMessage:
@@ -320,12 +319,12 @@ unsigned	priv= 0;
     }
     while ((config)&&(config->entry_type!=EventDef)) {
 	CfgEntryPtr next;
-	if (config->name.str)		uFree(config->name.str);
-	if (config->action.text)	uFree(config->action.text);
+	if (config->name.str)		free(config->name.str);
+	if (config->action.text)	free(config->action.text);
 	config->name.str= 	NULL;
 	config->action.text=	NULL;
 	next= 			config->next;
-	uFree(config);
+	free(config);
 	config= next;
     }
     cfg= config;
@@ -333,13 +332,13 @@ unsigned	priv= 0;
 	CfgEntryPtr next;
 	next= cfg->next;
 	if (next->entry_type!=EventDef) {
-	    if (next->name.str)		uFree(config->name.str);
-	    if (next->action.text)	uFree(config->action.text);
+	    if (next->name.str)		free(config->name.str);
+	    if (next->action.text)	free(config->action.text);
 	    next->name.str=		NULL;
 	    next->action.text=		NULL;
 	    cfg->next= 			next->next;
 	    next->next=			NULL;
-	    uFree(next);
+	    free(next);
 	}
 	else cfg= next;
     }
@@ -374,7 +373,8 @@ CfgEntryPtr	cfg,dflt;
 		    return cfg;
 		break;
 	   default:
-		uInternalError("Can't handle type %d XKB events yet, Sorry.\n");
+	        uInternalError("Can't handle type %d XKB events yet, Sorry.\n",
+			       ev->any.xkb_type);
 		break;
 	}
     }
@@ -401,7 +401,7 @@ int		ok;
 	    char *tmp;
 	    cfg->action.type= ShellAction;
 	    tmp= uStringDup(&cfg->action.text[1]);
-	    uFree(cfg->action.text);
+	    free(cfg->action.text);
 	    cfg->action.text= tmp;
 	}
 	else cfg->action.type= SoundAction;
@@ -474,7 +474,7 @@ Bool		ok;
 	cfgFileName= buf;
     }
     if (uStringEqual(cfgFileName,"-")) {
-	static char *in= "stdin";
+	static const char *in= "stdin";
 	file= stdin;
 	cfgFileName= in;
     }
@@ -501,7 +501,7 @@ Bool		ok;
 
     if (background) {
 	if (fork()!=0) {
-	    if (verbose) 
+	    if (verbose)
 		uInformation("Running in the background\n");
 	    exit(0);
 	}

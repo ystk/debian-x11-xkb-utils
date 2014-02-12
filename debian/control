@@ -2,7 +2,7 @@ Source: x11-xkb-utils
 Section: x11
 Priority: optional
 Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
-Uploaders: David Nusinow <dnusinow@debian.org>, Brice Goglin <bgoglin@debian.org>, Cyril Brulebois <kibi@debian.org>
+Uploaders: Cyril Brulebois <kibi@debian.org>
 Build-Depends:
  debhelper (>= 5.0.0),
  pkg-config,
@@ -11,6 +11,8 @@ Build-Depends:
  libxkbfile-dev (>= 1:1.0.6-2),
  bison,
  quilt,
+ xutils-dev (>= 1:7.5+4),
+ x11proto-core-dev (>= 7.0.17),
 # Reasons for build-depends:
 # debhelper for the packaging, pkg-config needed by configure scripts
 # Individual apps:
@@ -18,15 +20,14 @@ Build-Depends:
 # xkbcomp: libx11-dev, libxkbfile-dev
 # xkbevd: libx11-dev, libxkbfile-dev, (bison)
 # xkbprint: libx11-dev, libxkbfile-dev
-# xkbutils: libx11-dev, libxaw7-dev, libxkbfile-dev
-Standards-Version: 3.9.0
+# xkbutils: libx11-dev, libxaw7-dev, x11proto-core-dev
+Standards-Version: 3.9.1
 Vcs-Git: git://git.debian.org/git/pkg-xorg/app/x11-xkb-utils
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/app/x11-xkb-utils.git
 
 Package: x11-xkb-utils
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Pre-Depends: x11-common (>= 1:7.0.0)
 Replaces: xbase-clients (<= 1:7.2.ds2-3)
 Description: X11 XKB utilities
  xkbutils contains a number of client-side utilities for XKB, the X11
