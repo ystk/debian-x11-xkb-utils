@@ -1,3 +1,13 @@
+x11-xkb-utils (7.7+1) unstable; urgency=medium
+
+  * xkbutils 1.0.4.
+  * Switch to dh, use the autotools-dev addon; should give us new enough
+    config.{guess,sub} for arm64 (closes: #717841).
+  * Disable silent build rules.
+  * Install xkbcomp.pc, in case anything ever needs it.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 25 Dec 2013 16:13:32 +0100
+
 x11-xkb-utils (7.7~1) unstable; urgency=low
 
   * setxkbmap 1.3 0
